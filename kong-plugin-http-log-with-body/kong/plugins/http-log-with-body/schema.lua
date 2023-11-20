@@ -1,24 +1,24 @@
 local typedefs = require "kong.db.schema.typedefs"
 local url = require "socket.url"
+local deprecation = require("kong.deprecation")
+
 
 return {
-  name = "http-log",
+  name = "http-log-with-body",
   fields = {
     { protocols = typedefs.protocols },
     { config = {
         type = "record",
         fields = {
-          -- NOTE: any field added here must be also included in the handler's get_queue_id method
-          { http_endpoint = typedefs.url({ required = true, encrypted = true }) }, -- encrypted = true is a Kong-Enterprise exclusive feature, does nothing in Kong CE
-          { method = { type = "string", default = "POST", one_of = { "POST", "PUT", "PATCH" }, }, },
-          { content_type = { type = "string", default = "application/json", one_of = { "application/json" }, }, },
-          { timeout = { type = "number", default = 10000 }, },
-          { keepalive = { type = "number", default = 60000 }, },
-          { retry_count = { type = "integer", default = 10 }, },
-          { queue_size = { type = "integer", default = 1 }, },
-          { flush_timeout = { type = "number", default = 2 }, },
-          { headers = {
-            type = "map",
+          { http_endpoint = typedefs.url({ required = true, encrypted = true, referenceable = true }) }, -- encrypted = true is a Kong-Enterprise exclusive feature, does nothing in Kong CE
+          { method = { description = "An optional method used to send data to the HTTP server. Supported values are `POST` (default), `PUT`, and `PATCH`.", type = "string", default = "POST", one_of = { "POST", "PUT", "PATCH" }, }, },
+          { content_type = { description = "Indicates the type of data sent. The only available option is `application/json`.", type = "string", default = "application/json", one_of = { "application/json", "application/json; charset=utf-8" }, }, },
+          { timeout = { description = "An optional timeout in milliseconds when sending data to the upstream server.", type = "number", default = 10000 }, },
+          { keepalive = { description = "An optional value in milliseconds that defines how long an idle connection will live before being closed.", type = "number", default = 60000 }, },
+          { retry_count = { description = "Number of times to retry when sending data to the upstream server.", type = "integer" }, },
+          { queue_size = { description = "Maximum number of log entries to be sent on each message to the upstream server.", type = "integer" }, },
+          { flush_timeout = { description = "Optional time in seconds. If `queue_size` > 1, this is the max idle time before sending a log with less than `queue_size` records.", type = "number" }, },
+          { headers = { description = "An optional table of headers included in the HTTP message to the upstream server. Values are indexed by header name, and each header name accepts a single string.", type = "map",
             keys = typedefs.header_name {
               match_none = {
                 {
@@ -37,10 +37,13 @@ return {
             },
             values = {
               type = "string",
+              referenceable = true,
             },
           }},
+          { queue = typedefs.queue },
           { custom_fields_by_lua = typedefs.lua_code },
         },
+
         custom_validator = function(config)
           -- check no double userinfo + authorization header
           local parsed_url = url.parse(config.http_endpoint)
