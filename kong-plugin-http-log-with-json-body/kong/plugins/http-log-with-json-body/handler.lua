@@ -183,13 +183,11 @@ end
 function HttpLogWithJsonBodyHandler:access()
   local content_type = kong.request.get_header("Content-Type")
   local is_json = content_type and str_find(content_type:lower(), "application/json", nil, true)
-  kong.log(" >>>>>>>> access: ", "content_type:", content_type, " is_json:", is_json," <<<<<<<<<< ")
   if is_json then
     local ctx = kong.ctx.plugin
     local raw_body = kong.request.get_raw_body()
     if raw_body ~= nil and raw_body ~= '' then
       ctx.request_body = raw_body
-      kong.log(" >>>>>>>> access: ", "raw_body:", inspect(raw_body), " <<<<<<<<<< ")
     end
   end
 end
@@ -197,7 +195,6 @@ end
 function HttpLogWithJsonBodyHandler:body_filter()
   local content_type = kong.response.get_header("Content-Type")
   local is_json = content_type and str_find(content_type:lower(), "application/json", nil, true)
-  kong.log(" >>>>>>>> body_filter: ", "content_type:", content_type, " is_json:", is_json," <<<<<<<<<< ")
   if is_json then
     local ctx = kong.ctx.plugin
     local c, eof = ngx.arg[1], ngx.arg[2]
@@ -205,7 +202,6 @@ function HttpLogWithJsonBodyHandler:body_filter()
       local raw_body = (ctx.response_body or "") .. (c or "")
       if raw_body ~= nil and raw_body  ~= '' then
         ctx.response_body = raw_body
-      kong.log(" >>>>>>>> body_filter: ", "raw_body:", inspect(raw_body), " <<<<<<<<<< ")
       end
     end
   end
@@ -230,11 +226,8 @@ function HttpLogWithJsonBodyHandler:log(conf)
   end
 
 
-  kong.log(" >>>>>>>> ", "log_entry:", inspect(log_entry), " <<<<<<<<<< ")
 
-  local queue_conf = Queue.get_plugin_params("http-log-with-body", conf, make_queue_name(conf))
-  kong.log.debug("Queue name automatically configured based on configuration parameters to: ", queue_conf.name)
-
+  local queue_conf = Queue.get_plugin_params("http-log-with-json-body", conf, make_queue_name(conf))
   local ok, err = Queue.enqueue(
     queue_conf,
     send_entries,
