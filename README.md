@@ -50,9 +50,14 @@ plugins:
 Once the plugin is installed and configured, it will automatically intercept API requests and responses, serializing the JSON bodies of requests and responses, and forward these log entries, along with other configured fields, to the specified HTTP endpoint.
 Compatibility
 
+## Credits
+
+Most of the code in this repo has been copied and pasted from [here](https://github.com/zenvia/kong-plugin-http-log-with-body) and [here](https://github.com/Kong/kong/tree/master/kong/plugins/http-log).
+
 ## License
 
 This plugin is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-Issues
+
+## Issues
 
 If you encounter any issues or have suggestions for improvement, please open an issue on the GitHub repository.
