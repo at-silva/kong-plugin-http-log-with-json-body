@@ -4,7 +4,7 @@ local deprecation = require("kong.deprecation")
 
 
 return {
-  name = "http-log-with-body",
+  name = "http-log-with-json-body",
   fields = {
     { protocols = typedefs.protocols },
     { config = {
@@ -50,7 +50,7 @@ return {
           if parsed_url.userinfo and config.headers and config.headers ~= ngx.null then
             for hname, hvalue in pairs(config.headers) do
               if hname:lower() == "authorization" then
-                return false, "specifying both an 'Authorization' header and user info in 'http_endpoint' is not allowed"
+                return false, "specifying both an 'Authorization' header and user info in http_endpoint is not allowed"
               end
             end
           end

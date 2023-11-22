@@ -1,7 +1,7 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
 
-local PLUGIN_NAME = "http-log-with-body"
+local PLUGIN_NAME = "http-log-with-json-body"
 
 local function reset_log(logname)
   local client = assert(helpers.http_client(helpers.mock_upstream_host,
@@ -56,13 +56,13 @@ for _, strategy in helpers.all_strategies() do if strategy ~= "cassandra" then
         hosts = { "test1.com" },
         service = service1
       })
-      
+
       -- add the plugin to test to the route we created
       bp.plugins:insert {
         name = PLUGIN_NAME,
         route = { id = route1.id },
         config = {
-          http_endpoint = "http://" .. helpers.mock_upstream_host 
+          http_endpoint = "http://" .. helpers.mock_upstream_host
           .. ":"
           .. helpers.mock_upstream_port
           .. "/post_log/http_log_with_body",
@@ -97,7 +97,7 @@ for _, strategy in helpers.all_strategies() do if strategy ~= "cassandra" then
     describe("request", function()
       it("forwards the json body to the upstream service", function()
         reset_log("http_log_with_body")
-        request_body = {["msg"]="hello world"}
+        local request_body = {["msg"]="hello world"}
         local r = client:post("/status/200", {
           headers = {
             ["Host"] = "test1.com",
@@ -115,7 +115,7 @@ for _, strategy in helpers.all_strategies() do if strategy ~= "cassandra" then
 
       it("does not forward the json body to the upstream service when content-type is not json", function()
         reset_log("http_log_with_body")
-        request_body = "hello world"
+        local request_body = "hello world"
         local r = client:post("/status/200", {
           headers = {
             ["Host"] = "test1.com",

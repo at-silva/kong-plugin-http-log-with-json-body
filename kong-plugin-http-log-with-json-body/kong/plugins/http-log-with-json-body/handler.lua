@@ -156,7 +156,7 @@ local function send_entries(conf, entries)
 end
 
 
-local HttpLogWithBodyHandler = {
+local HttpLogWithJsonBodyHandler = {
   PRIORITY = 12,
   VERSION = kong_meta.version,
 }
@@ -180,7 +180,7 @@ local function make_queue_name(conf)
     conf.flush_timeout)
 end
 
-function HttpLogWithBodyHandler:access()
+function HttpLogWithJsonBodyHandler:access()
   local content_type = kong.request.get_header("Content-Type")
   local is_json = content_type and str_find(content_type:lower(), "application/json", nil, true)
   kong.log(" >>>>>>>> access: ", "content_type:", content_type, " is_json:", is_json," <<<<<<<<<< ")
@@ -194,7 +194,7 @@ function HttpLogWithBodyHandler:access()
   end
 end
 
-function HttpLogWithBodyHandler:body_filter()
+function HttpLogWithJsonBodyHandler:body_filter()
   local content_type = kong.response.get_header("Content-Type")
   local is_json = content_type and str_find(content_type:lower(), "application/json", nil, true)
   kong.log(" >>>>>>>> body_filter: ", "content_type:", content_type, " is_json:", is_json," <<<<<<<<<< ")
@@ -211,7 +211,7 @@ function HttpLogWithBodyHandler:body_filter()
   end
 end
 
-function HttpLogWithBodyHandler:log(conf)
+function HttpLogWithJsonBodyHandler:log(conf)
   if conf.custom_fields_by_lua then
     local set_serialize_value = kong.log.set_serialize_value
     for key, expression in pairs(conf.custom_fields_by_lua) do
@@ -246,4 +246,4 @@ function HttpLogWithBodyHandler:log(conf)
   end
 end
 
-return HttpLogWithBodyHandler
+return HttpLogWithJsonBodyHandler
